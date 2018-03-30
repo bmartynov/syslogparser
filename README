@@ -36,7 +36,9 @@ Parsing an RFC 3164 syslog message
 		panic(err)
 	}
 
-	for k, v := range p.Dump() {
+    syslogPacket := range p.Dump()
+
+	for k, v := range syslogPacket.Parts() {
 		fmt.Println(k, ":", v)
 	}
 
