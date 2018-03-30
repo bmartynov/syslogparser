@@ -5,10 +5,11 @@ package rfc5424
 
 import (
 	"fmt"
-	"github.com/jeromer/syslogparser"
 	"math"
 	"strconv"
 	"time"
+
+	"github.com/bmartynov/syslogparser"
 )
 
 const (
@@ -30,6 +31,36 @@ var (
 	ErrInvalidMsgId      = &syslogparser.ParserError{"Invalid msg ID"}
 	ErrNoStructuredData  = &syslogparser.ParserError{"No structured data"}
 )
+
+type Packet struct {
+	Priority       int
+	Facility       int
+	Severity       int
+	Version        int
+	Timestamp      time.Time
+	Hostname       string
+	AppName        string
+	ProcId         string
+	MessageId      string
+	StructuredData string
+	Message        string
+}
+
+func (p *Packet) Parts() map[string]interface{} {
+	return map[string]interface{}{
+		"priority":        p.Priority,
+		"facility":        p.Facility,
+		"severity":        p.Severity,
+		"version":         p.Version,
+		"timestamp":       p.Timestamp,
+		"hostname":        p.Hostname,
+		"app_name":        p.AppName,
+		"proc_id":         p.ProcId,
+		"msg_id":          p.MessageId,
+		"structured_data": p.StructuredData,
+		"message":         p.Message,
+	}
+}
 
 type Parser struct {
 	buff           []byte
@@ -103,19 +134,19 @@ func (p *Parser) Parse() error {
 	return nil
 }
 
-func (p *Parser) Dump() syslogparser.LogParts {
-	return syslogparser.LogParts{
-		"priority":        p.header.priority.P,
-		"facility":        p.header.priority.F.Value,
-		"severity":        p.header.priority.S.Value,
-		"version":         p.header.version,
-		"timestamp":       p.header.timestamp,
-		"hostname":        p.header.hostname,
-		"app_name":        p.header.appName,
-		"proc_id":         p.header.procId,
-		"msg_id":          p.header.msgId,
-		"structured_data": p.structuredData,
-		"message":         p.message,
+func (p *Parser) Dump() syslogparser.Packet {
+	return &Packet{
+		Priority:       p.header.priority.P,
+		Facility:       p.header.priority.F.Value,
+		Severity:       p.header.priority.S.Value,
+		Version:        p.header.version,
+		Timestamp:      p.header.timestamp,
+		Hostname:       p.header.hostname,
+		AppName:        p.header.appName,
+		ProcId:         p.header.procId,
+		MessageId:      p.header.msgId,
+		StructuredData: p.structuredData,
+		Message:        p.message,
 	}
 }
 
@@ -312,7 +343,7 @@ func parseYear(buff []byte, cursor *int, l int) (int, error) {
 
 	// XXX : we do not check for a valid year (ie. 1999, 2013 etc)
 	// XXX : we only checks the format is correct
-	sub := string(buff[*cursor : *cursor+yearLen])
+	sub := string(buff[*cursor: *cursor+yearLen])
 
 	*cursor += yearLen
 

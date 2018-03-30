@@ -2,10 +2,11 @@ package rfc3164
 
 import (
 	"bytes"
-	"github.com/jeromer/syslogparser"
 	. "launchpad.net/gocheck"
 	"testing"
 	"time"
+
+	"github.com/bmartynov/syslogparser"
 )
 
 // Hooks up gocheck into the gotest runner.
@@ -40,18 +41,18 @@ func (s *Rfc3164TestSuite) TestParser_Valid(c *C) {
 
 	now := time.Now()
 
-	obtained := p.Dump()
-	expected := syslogparser.LogParts{
-		"timestamp": time.Date(now.Year(), time.October, 11, 22, 14, 15, 0, time.UTC),
-		"hostname":  "mymachine",
-		"tag":       "very.large.syslog.message.tag",
-		"content":   "'su root' failed for lonvick on /dev/pts/8",
-		"priority":  34,
-		"facility":  4,
-		"severity":  2,
+	obtained := p.Dump().Parts()
+	expected := &Packet{
+		Timestamp: time.Date(now.Year(), time.October, 11, 22, 14, 15, 0, time.UTC),
+		Hostname:  "mymachine",
+		Tag:       "very.large.syslog.message.tag",
+		Content:   "'su root' failed for lonvick on /dev/pts/8",
+		Priority:  34,
+		Facility:  4,
+		Severity:  2,
 	}
 
-	c.Assert(obtained, DeepEquals, expected)
+	c.Assert(obtained, DeepEquals, expected.Parts())
 }
 
 func (s *Rfc3164TestSuite) TestParseWithout_Hostname(c *C) {
@@ -65,18 +66,18 @@ func (s *Rfc3164TestSuite) TestParseWithout_Hostname(c *C) {
 
 	now := time.Now()
 
-	obtained := p.Dump()
-	expected := syslogparser.LogParts{
-		"timestamp": time.Date(now.Year(), time.June, 23, 13, 17, 42, 0, time.UTC),
-		"hostname":  "testhost",
-		"tag":       "chronyd",
-		"content":   "Selected source 192.168.65.1",
-		"priority":  30,
-		"facility":  3,
-		"severity":  6,
+	obtained := p.Dump().Parts()
+	expected := &Packet{
+		Timestamp: time.Date(now.Year(), time.June, 23, 13, 17, 42, 0, time.UTC),
+		Hostname:  "testhost",
+		Tag:       "chronyd",
+		Content:   "Selected source 192.168.65.1",
+		Priority:  30,
+		Facility:  3,
+		Severity:  6,
 	}
 
-	c.Assert(obtained, DeepEquals, expected)
+	c.Assert(obtained, DeepEquals, expected.Parts())
 }
 
 func (s *Rfc3164TestSuite) TestParseHeader_Valid(c *C) {

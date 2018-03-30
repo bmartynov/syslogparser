@@ -2,7 +2,7 @@ package rfc3164_test
 
 import (
 	"fmt"
-	"github.com/jeromer/syslogparser/rfc3164"
+	"github.com/bmartynov/syslogparser/rfc3164"
 )
 
 func ExampleNewParser() {
@@ -15,5 +15,5 @@ func ExampleNewParser() {
 		panic(err)
 	}
 
-	fmt.Println(p.Dump())
+	fmt.Println(p.Dump().Parts())
 }

@@ -2,9 +2,32 @@ package rfc3164
 
 import (
 	"bytes"
-	"github.com/jeromer/syslogparser"
 	"time"
+
+	"github.com/bmartynov/syslogparser"
 )
+
+type Packet struct {
+	Priority  int
+	Facility  int
+	Severity  int
+	Timestamp time.Time
+	Hostname  string
+	Tag       string
+	Content   string
+}
+
+func (p *Packet) Parts() map[string]interface{} {
+	return map[string]interface{}{
+		"priority":  p.Priority,
+		"facility":  p.Facility,
+		"severity":  p.Severity,
+		"timestamp": p.Timestamp,
+		"hostname":  p.Hostname,
+		"tag":       p.Tag,
+		"content":   p.Content,
+	}
+}
 
 type Parser struct {
 	buff     []byte
@@ -73,15 +96,15 @@ func (p *Parser) Parse() error {
 	return nil
 }
 
-func (p *Parser) Dump() syslogparser.LogParts {
-	return syslogparser.LogParts{
-		"timestamp": p.header.timestamp,
-		"hostname":  p.header.hostname,
-		"tag":       p.message.tag,
-		"content":   p.message.content,
-		"priority":  p.priority.P,
-		"facility":  p.priority.F.Value,
-		"severity":  p.priority.S.Value,
+func (p *Parser) Dump() syslogparser.Packet {
+	return &Packet{
+		Timestamp: p.header.timestamp,
+		Hostname:  p.header.hostname,
+		Tag:       p.message.tag,
+		Content:   p.message.content,
+		Priority:  p.priority.P,
+		Facility:  p.priority.F.Value,
+		Severity:  p.priority.S.Value,
 	}
 }
 

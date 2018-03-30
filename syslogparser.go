@@ -32,7 +32,7 @@ var (
 
 type LogParser interface {
 	Parse() error
-	Dump() LogParts
+	Dump() Packet
 	Location(*time.Location)
 }
 
@@ -54,7 +54,9 @@ type Severity struct {
 	Value int
 }
 
-type LogParts map[string]interface{}
+type Packet interface {
+	Parts() map[string]interface{}
+}
 
 // https://tools.ietf.org/html/rfc3164#section-4.1
 func ParsePriority(buff []byte, cursor *int, l int) (Priority, error) {
@@ -162,7 +164,7 @@ func Parse2Digits(buff []byte, cursor *int, l int, min int, max int, e error) (i
 		return 0, ErrEOL
 	}
 
-	sub := string(buff[*cursor : *cursor+digitLen])
+	sub := string(buff[*cursor: *cursor+digitLen])
 
 	*cursor += digitLen
 

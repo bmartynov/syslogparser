@@ -2,7 +2,7 @@ package rfc5424
 
 import (
 	"fmt"
-	"github.com/jeromer/syslogparser"
+	"github.com/bmartynov/syslogparser"
 	. "launchpad.net/gocheck"
 	"testing"
 	"time"
@@ -31,58 +31,58 @@ func (s *Rfc5424TestSuite) TestParser_Valid(c *C) {
 	tmpTs, err := time.Parse("-07:00", "-07:00")
 	c.Assert(err, IsNil)
 
-	expected := []syslogparser.LogParts{
-		syslogparser.LogParts{
-			"priority":        34,
-			"facility":        4,
-			"severity":        2,
-			"version":         1,
-			"timestamp":       time.Date(2003, time.October, 11, 22, 14, 15, 3*10e5, time.UTC),
-			"hostname":        "mymachine.example.com",
-			"app_name":        "su",
-			"proc_id":         "-",
-			"msg_id":          "ID47",
-			"structured_data": "-",
-			"message":         "'su root' failed for lonvick on /dev/pts/8",
+	expected := []syslogparser.Packet{
+		&Packet{
+			Priority:        34,
+			Facility:        4,
+			Severity:        2,
+			Version:         1,
+			Timestamp:       time.Date(2003, time.October, 11, 22, 14, 15, 3*10e5, time.UTC),
+			Hostname:        "mymachine.example.com",
+			AppName:        "su",
+			ProcId:         "-",
+			MessageId:          "ID47",
+			StructuredData: "-",
+			Message:         "'su root' failed for lonvick on /dev/pts/8",
 		},
-		syslogparser.LogParts{
-			"priority":        165,
-			"facility":        20,
-			"severity":        5,
-			"version":         1,
-			"timestamp":       time.Date(2003, time.August, 24, 5, 14, 15, 3*10e2, tmpTs.Location()),
-			"hostname":        "192.0.2.1",
-			"app_name":        "myproc",
-			"proc_id":         "8710",
-			"msg_id":          "-",
-			"structured_data": "-",
-			"message":         "%% It's time to make the do-nuts.",
+		&Packet{
+			Priority:        165,
+			Facility:        20,
+			Severity:        5,
+			Version:         1,
+			Timestamp:       time.Date(2003, time.August, 24, 5, 14, 15, 3*10e2, tmpTs.Location()),
+			Hostname:        "192.0.2.1",
+			AppName:        "myproc",
+			ProcId:         "8710",
+			MessageId:          "-",
+			StructuredData: "-",
+			Message:         "%% It's time to make the do-nuts.",
 		},
-		syslogparser.LogParts{
-			"priority":        165,
-			"facility":        20,
-			"severity":        5,
-			"version":         1,
-			"timestamp":       time.Date(2003, time.October, 11, 22, 14, 15, 3*10e5, time.UTC),
-			"hostname":        "mymachine.example.com",
-			"app_name":        "evntslog",
-			"proc_id":         "-",
-			"msg_id":          "ID47",
-			"structured_data": `[exampleSDID@32473 iut="3" eventSource="Application" eventID="1011"]`,
-			"message":         "An application event log entry...",
+		&Packet{
+			Priority:        165,
+			Facility:        20,
+			Severity:        5,
+			Version:         1,
+			Timestamp:       time.Date(2003, time.October, 11, 22, 14, 15, 3*10e5, time.UTC),
+			Hostname:        "mymachine.example.com",
+			AppName:        "evntslog",
+			ProcId:         "-",
+			MessageId:          "ID47",
+			StructuredData: `[exampleSDID@32473 iut="3" eventSource="Application" eventID="1011"]`,
+			Message:         "An application event log entry...",
 		},
-		syslogparser.LogParts{
-			"priority":        165,
-			"facility":        20,
-			"severity":        5,
-			"version":         1,
-			"timestamp":       time.Date(2003, time.October, 11, 22, 14, 15, 3*10e5, time.UTC),
-			"hostname":        "mymachine.example.com",
-			"app_name":        "evntslog",
-			"proc_id":         "-",
-			"msg_id":          "ID47",
-			"structured_data": `[exampleSDID@32473 iut="3" eventSource= "Application" eventID="1011"][examplePriority@32473 class="high"]`,
-			"message":         "",
+		&Packet{
+			Priority:        165,
+			Facility:        20,
+			Severity:        5,
+			Version:         1,
+			Timestamp:       time.Date(2003, time.October, 11, 22, 14, 15, 3*10e5, time.UTC),
+			Hostname:        "mymachine.example.com",
+			AppName:        "evntslog",
+			ProcId:         "-",
+			MessageId:          "ID47",
+			StructuredData: `[exampleSDID@32473 iut="3" eventSource= "Application" eventID="1011"][examplePriority@32473 class="high"]`,
+			Message:         "",
 		},
 	}
 
@@ -101,9 +101,10 @@ func (s *Rfc5424TestSuite) TestParser_Valid(c *C) {
 		err := p.Parse()
 		c.Assert(err, IsNil)
 
-		obtained := p.Dump()
+		obtained := p.Dump().Parts()
 		for k, v := range obtained {
-			c.Assert(v, DeepEquals, expected[i][k])
+			expectedParts := expected[i].Parts()
+			c.Assert(v, DeepEquals, expectedParts[k])
 		}
 	}
 }
